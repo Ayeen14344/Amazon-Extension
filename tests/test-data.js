@@ -22,5 +22,26 @@
     considerPlannedTiming: false, actualStops, plannedStops: [], plannedBreaks: [], warnings: []
   }, options || {});
 
-  VRA.TestData = { iso, point, plannedBreak, base };
+  const tooltipFixtures = Object.freeze({
+    actualDelivery: [
+      'Actual - Delivery',
+      'DRIVER_A',
+      'Stop #98    3:45pm',
+      'Planned    4:15pm (-30m)',
+      '3/3 deliveries'
+    ].join('\n'),
+    plannedDelivery: [
+      'Planned route - Delivery',
+      'Stop #77    3:22pm',
+      '2 packages'
+    ].join('\n'),
+    mealBreak: [
+      'Planned - Meal break',
+      'Start    2:32pm',
+      'End    3:02pm',
+      'Duration    30m'
+    ].join('\n')
+  });
+
+  VRA.TestData = { iso, point, plannedBreak, base, tooltipFixtures };
 })(globalThis.VineRouteAuditor);

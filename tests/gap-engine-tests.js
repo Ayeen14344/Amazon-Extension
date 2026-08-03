@@ -59,6 +59,21 @@
   ])).gaps[0].actualGapMinutes);
   add('14. CSV formula prefixes escaped', "'=SUM(A1:A2)", () => C.escapeCell('=SUM(A1:A2)'));
   add('15. CSV commas and quotes escaped', '"Driver, ""A"""', () => C.escapeCell('Driver, "A"'));
+  add('16. Actual delivery tooltip is parsed', 'actual|98|15:45|16:15|-30|3/3 deliveries', () => {
+    const point = VRA.TooltipParser.parse(D.tooltipFixtures.actualDelivery, '2026-08-02', 'tooltip', 'high').point;
+    return [point.seriesType, point.stopNumber, point.timestamp.slice(11, 16), point.plannedTimestamp.slice(11, 16),
+      point.varianceMinutes, point.deliveryProgress].join('|');
+  });
+  add('17. Planned delivery tooltip is parsed', 'planned|77|15:22|2', () => {
+    const point = VRA.TooltipParser.parse(D.tooltipFixtures.plannedDelivery, '2026-08-02', 'tooltip', 'high').point;
+    return [point.seriesType, point.stopNumber, point.timestamp.slice(11, 16), point.packageCount].join('|');
+  });
+  add('18. Planned meal-break tooltip is parsed', 'break|meal|14:32|15:02|30|30', () => {
+    const plannedBreak = VRA.TooltipParser.parse(D.tooltipFixtures.mealBreak, '2026-08-02', 'tooltip', 'high').breakRecord;
+    return [plannedBreak.seriesType, plannedBreak.breakType, plannedBreak.plannedStart.slice(11, 16),
+      plannedBreak.plannedEnd.slice(11, 16), plannedBreak.plannedDurationMinutes,
+      plannedBreak.allowanceMinutes].join('|');
+  });
 
   function comparable(value) {
     return typeof value === 'string' ? value : JSON.stringify(value);
