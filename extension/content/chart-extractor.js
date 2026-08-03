@@ -37,10 +37,16 @@
     let endDate = end.date;
     if (endDate <= start.date) endDate = new Date(endDate.getTime() + 86400000);
     const duration = Math.max(0, T.minutesBetween(start.date, endDate));
-    return {
+    const explicitAllowance = String(text).match(/\b(15|30)\s*(?:minute|min)\b/i);
+    const normalizedType = /\b(?:meal|lunch)\b/i.test(text) ? 'meal' :
+      (/\b(?:rest|paid\s+break|first\s+break|second\s+break)\b/i.test(text) ? 'rest_break' : '');
+    const record = {
       seriesType: 'break', plannedStart: T.toLocalIso(start.date), plannedEnd: T.toLocalIso(endDate),
-      allowanceMinutes: duration, source, sourceText: String(text).slice(0, 500), confidence, warnings
+      plannedDurationMinutes: duration, source, sourceText: String(text).slice(0, 500), confidence, warnings
     };
+    if (explicitAllowance) record.allowanceMinutes = Number(explicitAllowance[1]);
+    if (normalizedType) record.breakType = normalizedType;
+    return record;
   }
 
   function parsePoint(text, routeDate, source, confidence) {
