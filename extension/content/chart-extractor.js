@@ -50,6 +50,8 @@
   }
 
   function parsePoint(text, routeDate, source, confidence) {
+    const tooltipResult = VRA.TooltipParser.parse(text, routeDate, source, confidence);
+    if (tooltipResult.recognized) return tooltipResult;
     const value = String(text || '').replace(/\s+/g, ' ').trim();
     const kind = seriesType(value);
     if (kind === 'break') return { breakRecord: parseBreak(value, routeDate, source, confidence) };
