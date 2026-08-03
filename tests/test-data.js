@@ -12,10 +12,10 @@
     confidence: 'high',
     warnings: []
   });
-  const plannedBreak = (start, end, allowanceMinutes, day) => ({
-    seriesType: 'break', plannedStart: iso(start, day), plannedEnd: iso(end, day),
+  const plannedBreak = (start, end, allowanceMinutes, metadata) => Object.assign({
+    seriesType: 'break', plannedStart: iso(start), plannedEnd: iso(end),
     allowanceMinutes, source: 'test-fixture', sourceText: 'planned break', confidence: 'high', warnings: []
-  });
+  }, metadata || {});
   const base = (actualStops, options) => Object.assign({
     driverName: 'Test Driver', routeDate: '2026-08-02', routeId: 'TEST-1', station: 'TST',
     analyzedAt: '2026-08-02T18:00:00', thresholdMinutes: 20,

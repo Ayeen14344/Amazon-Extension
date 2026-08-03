@@ -15,17 +15,21 @@
   add('3. 20-minute gap with no break', 'RED FLAG', () => gap(20).status);
   add('4. 28-minute gap with no break', 'RED FLAG', () => gap(28).status);
   add('5. 25-minute gap inside meal break', 'PLANNED BREAK / approved 25', () => {
-    const result = gap(25, { plannedBreaks: [D.plannedBreak('09:55', '10:30', 30)] });
+    const result = gap(25, { plannedBreaks: [D.plannedBreak('09:55', '10:30', 30, {
+      breakType: 'meal', sourceText: 'Planned meal break 9:55 AM to 10:30 AM'
+    })] });
     return `${result.status} / approved ${result.approvedBreakMinutes}`;
   });
   add('6. 35-minute gap with 15-minute break', 'RED FLAG / remaining 20', () => {
-    const result = gap(35, { plannedBreaks: [D.plannedBreak('10:05', '10:20', 15)] });
+    const result = gap(35, { plannedBreaks: [D.plannedBreak('10:05', '10:20', 15, { breakType: 'rest_break' })] });
     return `${result.status} / remaining ${result.remainingNonBreakGapMinutes}`;
   });
   add('7. Break allowance cannot be used twice', '15 total approved', () => {
     const result = E.analyze(D.base([
       D.point('actual', 1, '10:00'), D.point('actual', 2, '10:10'), D.point('actual', 3, '10:25')
-    ], { plannedBreaks: [D.plannedBreak('10:00', '10:25', 15)] }));
+    ], { plannedBreaks: [D.plannedBreak('10:00', '10:25', 15, {
+      breakType: 'rest_break', breakWindowId: 'test-rest-break-1'
+    })] }));
     const approved = result.gaps.reduce((sum, item) => sum + (item.approvedBreakMinutes || 0), 0);
     return `${approved} total approved`;
   });
