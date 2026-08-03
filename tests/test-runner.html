@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VINE Route Gap Auditor Tests</title>
+  <link rel="stylesheet" href="test-runner.css">
+</head>
+<body>
+  <main>
+    <h1>VINE Route Gap Auditor</h1>
+    <p class="subtitle">Browser-based deterministic engine tests</p>
+    <section class="summary" aria-live="polite">
+      <span>Total <strong id="total">0</strong></span>
+      <span class="pass">Passed <strong id="passed">0</strong></span>
+      <span class="fail">Failed <strong id="failed">0</strong></span>
+    </section>
+    <table>
+      <thead><tr><th>Test name</th><th>Expected</th><th>Actual</th><th>Result</th></tr></thead>
+      <tbody id="results"></tbody>
+    </table>
+  </main>
+  <script src="../extension/shared/namespace.js"></script>
+  <script src="../extension/shared/constants.js"></script>
+  <script src="../extension/shared/validation.js"></script>
+  <script src="../extension/shared/time-utils.js"></script>
+  <script src="../extension/shared/gap-engine.js"></script>
+  <script src="../extension/shared/csv-utils.js"></script>
+  <script src="test-data.js"></script>
+  <script src="gap-engine-tests.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+:root {
+  color-scheme: light;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #18313f;
+  background: #f3f7f8;
+  font-size: 13px;
+}
+* { box-sizing: border-box; }
+body { width: 520px; max-height: 680px; margin: 0; overflow-y: auto; }
+header { display: flex; align-items: flex-start; justify-content: space-between; padding: 16px 18px; color: white; background: linear-gradient(120deg, #123e52, #167188); }
+h1 { margin: 0; font-size: 20px; line-height: 1.2; }
+header p { margin: 4px 0 0; color: #d7f1f4; }
+.version { padding: 4px 7px; border-radius: 12px; background: #ffffff20; font-size: 11px; }
+main { padding: 14px; }
+section { margin-bottom: 12px; padding: 12px; background: white; border: 1px solid #d9e3e7; border-radius: 7px; box-shadow: 0 1px 2px #0000000a; }
+h2 { margin: 0 0 10px; font-size: 14px; color: #174b5e; }
+.section-title { display: flex; justify-content: space-between; align-items: center; }
+.section-title h2 { margin-bottom: 0; }
+.badge { display: inline-block; max-width: 310px; padding: 4px 7px; overflow: hidden; border-radius: 12px; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 700; }
+.badge.good { color: #0b5d2a; background: #dff5e7; }
+.badge.warn { color: #7a4b00; background: #fff0c7; }
+.badge.bad { color: #8d1d18; background: #fde4e2; }
+.badge.neutral { color: #405661; background: #e8eef1; }
+.route-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin: 12px 0 0; }
+.route-grid div:first-child { grid-column: 1 / -1; }
+dt { color: #647983; font-size: 11px; }
+dd { margin: 2px 0 0; overflow-wrap: anywhere; font-weight: 600; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+input[type="number"] { width: 78px; padding: 6px; border: 1px solid #9fb2bb; border-radius: 4px; }
+.checkbox-row { display: flex; align-items: center; gap: 7px; margin-top: 10px; }
+.actions { display: flex; flex-wrap: wrap; gap: 7px; }
+button { padding: 7px 10px; border: 1px solid #8aa3ad; border-radius: 5px; color: #18313f; background: white; font: inherit; font-weight: 600; cursor: pointer; }
+button:hover:not(:disabled) { background: #edf4f6; }
+button:focus-visible, input:focus-visible, pre:focus-visible { outline: 3px solid #f0ab00; outline-offset: 1px; }
+button.primary { color: white; border-color: #12667d; background: #12667d; }
+button.danger { color: white; border-color: #a3312b; background: #a3312b; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.operation p { margin: 0 0 10px; }
+.metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.metrics div { padding: 7px 3px; text-align: center; background: #f2f7f8; border-radius: 4px; }
+.metrics strong, .metrics span { display: block; }
+.metrics strong { color: #12667d; font-size: 16px; }
+.metrics span { margin-top: 2px; color: #647983; font-size: 9px; }
+.message { margin-top: 9px; padding: 8px; border-left: 4px solid #d28a00; background: #fff8e7; white-space: pre-wrap; }
+pre { max-height: 180px; margin: 10px 0; padding: 9px; overflow: auto; color: #e8f4f7; background: #18313f; border-radius: 4px; font: 11px/1.45 Consolas, monospace; white-space: pre-wrap; word-break: break-word; }
+.mini-actions { display: flex; gap: 7px; }
+.table-wrap { overflow-x: auto; border: 1px solid #d9e3e7; }
+table { width: 1320px; border-collapse: collapse; font-size: 11px; }
+th, td { padding: 7px; border-bottom: 1px solid #e2e9ec; text-align: left; vertical-align: top; }
+th { color: white; background: #2d596a; white-space: nowrap; }
+td { max-width: 210px; overflow-wrap: anywhere; }
+.empty { padding: 16px; color: #647983; text-align: center; }
+.status { display: inline-block; padding: 3px 5px; border-radius: 3px; font-weight: 700; white-space: nowrap; }
+.status-normal, .status-planned-break { color: #0b5d2a; background: #dff5e7; }
+.status-review { color: #7a4b00; background: #fff0c7; }
+.status-red-flag, .status-incomplete-data { color: #8d1d18; background: #fde4e2; }
+.disclaimer { margin: 9px 0 0; color: #526873; font-size: 10px; line-height: 1.4; }

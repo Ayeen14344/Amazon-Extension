@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VINE Route Gap Auditor</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>VINE Route Gap Auditor</h1>
+      <p>Phase 1: Current Driver Analysis</p>
+    </div>
+    <span class="version">v0.1.0</span>
+  </header>
+
+  <main>
+    <section class="status-card" aria-labelledby="page-status-heading">
+      <div class="section-title">
+        <h2 id="page-status-heading">Page status</h2>
+        <span id="status-badge" class="badge neutral">Checking…</span>
+      </div>
+      <dl class="route-grid">
+        <div><dt>Chart type</dt><dd id="chart-type">Unknown</dd></div>
+        <div><dt>Driver</dt><dd id="driver-name">—</dd></div>
+        <div><dt>Route date</dt><dd id="route-date">—</dd></div>
+        <div><dt>Route ID</dt><dd id="route-id">—</dd></div>
+        <div><dt>Station / area</dt><dd id="station">—</dd></div>
+      </dl>
+    </section>
+
+    <section aria-labelledby="settings-heading">
+      <h2 id="settings-heading">Settings</h2>
+      <div class="settings-row">
+        <label for="threshold">Red-flag threshold (minutes)</label>
+        <input id="threshold" type="number" min="5" max="120" step="1" value="20">
+      </div>
+      <label class="checkbox-row"><input id="consider-planned" type="checkbox"> Consider planned route timing</label>
+    </section>
+
+    <section class="actions" aria-label="Chart actions">
+      <button id="inspect" type="button">Inspect Chart</button>
+      <button id="analyze" type="button" class="primary">Analyze Current Driver</button>
+      <button id="cancel" type="button" class="danger" hidden>Cancel</button>
+      <button id="export" type="button" disabled>Export CSV</button>
+      <button id="clear" type="button">Clear Results</button>
+    </section>
+
+    <section class="operation" aria-labelledby="operation-heading">
+      <h2 id="operation-heading">Progress and status</h2>
+      <p id="operation-message" role="status" aria-live="polite">Ready.</p>
+      <div class="metrics">
+        <div><strong id="actual-count">0</strong><span>Actual points</span></div>
+        <div><strong id="planned-count">0</strong><span>Planned points</span></div>
+        <div><strong id="break-count">0</strong><span>Planned breaks</span></div>
+        <div><strong id="gap-count">0</strong><span>Gaps analyzed</span></div>
+        <div><strong id="flag-count">0</strong><span>Red flags</span></div>
+      </div>
+      <div id="message-box" class="message" hidden></div>
+    </section>
+
+    <section id="diagnostics-section" hidden aria-labelledby="diagnostics-heading">
+      <div class="section-title">
+        <h2 id="diagnostics-heading">Chart diagnostics</h2>
+        <span id="diagnostic-mode" class="badge neutral">Unknown</span>
+      </div>
+      <pre id="diagnostics-preview" tabindex="0"></pre>
+      <div class="mini-actions">
+        <button id="copy-diagnostics" type="button">Copy Diagnostics</button>
+        <button id="download-diagnostics" type="button">Download JSON</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="results-heading">
+      <h2 id="results-heading">Results</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Previous stop</th><th>Next stop</th><th>Previous actual</th><th>Next actual</th>
+            <th>Actual gap</th><th>Planned gap</th><th>Approved break</th><th>Remaining gap</th>
+            <th>Delay vs plan</th><th>Status</th><th>Review reason</th>
+          </tr></thead>
+          <tbody id="results-body"><tr><td colspan="11" class="empty">No analysis results yet.</td></tr></tbody>
+        </table>
+      </div>
+      <p class="disclaimer">Anomaly screening only. Every flagged item is a potential route gap requiring manual review, not proof of misconduct or a disciplinary recommendation.</p>
+    </section>
+  </main>
+
+  <script src="../shared/namespace.js"></script>
+  <script src="../shared/constants.js"></script>
+  <script src="../shared/validation.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

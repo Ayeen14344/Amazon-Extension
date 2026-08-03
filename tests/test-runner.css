@@ -1,0 +1,14 @@
+:root { color-scheme: light; font-family: Arial, Helvetica, sans-serif; color: #172b3a; background: #f4f7f9; }
+body { margin: 0; }
+main { max-width: 1180px; margin: 32px auto; padding: 0 24px 48px; }
+h1 { margin-bottom: 4px; color: #143e52; }
+.subtitle { margin-top: 0; color: #526774; }
+.summary { display: flex; gap: 24px; padding: 16px; margin: 20px 0; background: white; border: 1px solid #d8e2e8; border-radius: 8px; }
+.pass { color: #137333; }
+.fail { color: #b3261e; }
+table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 1px 4px #00000012; }
+th, td { padding: 11px 12px; text-align: left; border-bottom: 1px solid #e1e8ec; vertical-align: top; }
+th { color: white; background: #165a72; }
+td:nth-child(2), td:nth-child(3) { font-family: Consolas, monospace; font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+.result-pass { color: #137333; font-weight: 700; }
+.result-fail { color: #b3261e; font-weight: 700; }
