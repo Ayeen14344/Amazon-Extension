@@ -52,27 +52,87 @@
   }
 
   function prepareBreaks(breaks, routeDate) {
-    const allowances = C.BREAK_ALLOWANCES_MINUTES;
-    return (Array.isArray(breaks) ? breaks : []).map((item, index) => {
+    const prepared = (Array.isArray(breaks) ? breaks : []).map((item, index) => {
       const start = T.parseTimestamp(item.plannedStart, routeDate);
       const end = T.parseTimestamp(item.plannedEnd, routeDate);
       let endDate = end.date;
       if (start.valid && end.valid && endDate <= start.date) endDate = new Date(endDate.getTime() + 86400000);
       const duration = start.valid && end.valid ? Math.max(0, T.minutesBetween(start.date, endDate)) : 0;
-      const defaultAllowance = allowances[Math.min(index, allowances.length - 1)];
-      const explicit = Number(item.allowanceMinutes);
-      const allowance = Number.isFinite(explicit) && explicit >= 0
-        ? Math.min(explicit, duration || explicit, defaultAllowance)
-        : Math.min(duration, defaultAllowance);
       return Object.assign({}, item, {
         breakIndex: item.breakIndex || index + 1,
+        breakWindowId: stableBreakWindowId(item, start.timestamp, end.timestamp, index),
         _start: start.date,
         _end: endDate,
         valid: start.valid && end.valid && endDate > start.date,
-        allowanceMinutes: Math.max(0, allowance),
-        remainingAllowanceMinutes: Math.max(0, allowance)
+        _plannedDurationMinutes: duration
       });
     }).sort((a, b) => (a._start || 0) - (b._start || 0));
+
+    const seenWindowIds = new Set();
+    const distinctPrepared = prepared.filter((item) => {
+      if (seenWindowIds.has(item.breakWindowId)) return false;
+      seenWindowIds.add(item.breakWindowId);
+      return true;
+    });
+
+    let unidentifiedBreakIndex = 0;
+    distinctPrepared.forEach((item) => {
+      const resolved = resolveBreakAllowance(item, unidentifiedBreakIndex);
+      if (resolved.source === 'chronological-fallback') unidentifiedBreakIndex += 1;
+      const allowance = item.valid ? Math.min(resolved.minutes, item._plannedDurationMinutes) : 0;
+      item.allowanceSource = resolved.source;
+      item.allowanceMinutes = Math.max(0, allowance);
+      item.remainingAllowanceMinutes = Math.max(0, allowance);
+    });
+    return distinctPrepared;
+  }
+
+  function normalizedBreakType(item) {
+    const value = item.normalizedBreakType || item.breakType || '';
+    return String(value).trim().toLowerCase().replace(/[\s-]+/g, '_');
+  }
+
+  function sanitizedBreakLabel(item) {
+    return [item.breakLabel, item.label, item.sourceText]
+      .filter((value) => typeof value === 'string')
+      .join(' ').replace(/\s+/g, ' ').trim().slice(0, 500);
+  }
+
+  function resolveBreakAllowance(item, unidentifiedBreakIndex) {
+    const explicit = typeof item.allowanceMinutes === 'number'
+      ? item.allowanceMinutes
+      : (typeof item.allowanceMinutes === 'string' && item.allowanceMinutes.trim() !== ''
+        ? Number(item.allowanceMinutes) : NaN);
+    if (Number.isFinite(explicit) && explicit > 0) {
+      return { minutes: explicit, source: 'explicit-allowance' };
+    }
+
+    const type = normalizedBreakType(item);
+    if (Object.prototype.hasOwnProperty.call(C.BREAK_TYPE_ALLOWANCES_MINUTES, type)) {
+      // Explicit meal metadata must win before the 15/30/15 fallback so a standalone meal is not treated as a first rest break.
+      return { minutes: C.BREAK_TYPE_ALLOWANCES_MINUTES[type], source: 'normalized-break-type' };
+    }
+
+    const label = sanitizedBreakLabel(item);
+    if (/\b(?:meal|lunch)\b/i.test(label)) return { minutes: 30, source: 'recognized-meal-label' };
+    if (/\b(?:rest|first\s+break|second\s+break|paid\s+break|15[ -]?minute\s+break)\b/i.test(label)) {
+      return { minutes: 15, source: 'recognized-rest-label' };
+    }
+
+    const fallbacks = C.BREAK_ALLOWANCES_MINUTES;
+    return {
+      minutes: fallbacks[Math.min(unidentifiedBreakIndex, fallbacks.length - 1)],
+      source: 'chronological-fallback'
+    };
+  }
+
+  function stableBreakWindowId(item, startTimestamp, endTimestamp, originalIndex) {
+    const supplied = item.breakWindowId || item.breakId;
+    if (typeof supplied === 'string' && supplied.trim()) return supplied.trim().slice(0, 120);
+    if (startTimestamp && endTimestamp) {
+      return [startTimestamp, endTimestamp, normalizedBreakType(item) || 'unknown'].join('|');
+    }
+    return ['invalid-window', originalIndex + 1].join('|');
   }
 
   function findPlanned(planned, stopNumber, actualDate) {
@@ -93,7 +153,7 @@
       if (applied > 0) {
         plannedBreak.remainingAllowanceMinutes -= applied;
         approved += applied;
-        used.push({ breakIndex: plannedBreak.breakIndex, minutes: T.round1(applied) });
+        used.push({ breakIndex: plannedBreak.breakIndex, breakWindowId: plannedBreak.breakWindowId, minutes: T.round1(applied) });
       }
     });
     return { approved: Math.max(0, approved), used };

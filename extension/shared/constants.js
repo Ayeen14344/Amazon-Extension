@@ -13,6 +13,13 @@
     TOOLTIP_TIMEOUT_MS: 900,
     MAX_DIAGNOSTIC_SAMPLES: 30,
     BREAK_ALLOWANCES_MINUTES: Object.freeze([15, 30, 15]),
+    BREAK_TYPE_ALLOWANCES_MINUTES: Object.freeze({
+      first_break: 15,
+      meal: 30,
+      lunch: 30,
+      second_break: 15,
+      rest_break: 15
+    }),
     MESSAGE_TYPES: Object.freeze([
       'CHECK_PAGE_STATUS', 'INSPECT_CHART', 'ANALYZE_CURRENT_DRIVER',
       'CANCEL_ANALYSIS', 'GET_LAST_RESULT', 'SAVE_LAST_RESULT',
