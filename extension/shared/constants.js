@@ -11,6 +11,11 @@
     NORMAL_MAX_MINUTES: 10,
     TOOLTIP_DELAY_MS: 90,
     TOOLTIP_TIMEOUT_MS: 900,
+    MAX_TOOLTIP_POINTS: 180,
+    LIVE_CAPTURE_TIMEOUT_MS: 300000,
+    LIVE_TOOLTIP_STABILITY_MS: 140,
+    MAX_LIVE_CAPTURE_RECORDS: 100,
+    MAX_LIVE_TOOLTIP_TEXT: 1000,
     MAX_DIAGNOSTIC_SAMPLES: 30,
     BREAK_ALLOWANCES_MINUTES: Object.freeze([15, 30, 15]),
     BREAK_TYPE_ALLOWANCES_MINUTES: Object.freeze({
@@ -23,14 +28,16 @@
     MESSAGE_TYPES: Object.freeze([
       'CHECK_PAGE_STATUS', 'INSPECT_CHART', 'ANALYZE_CURRENT_DRIVER',
       'CANCEL_ANALYSIS', 'GET_LAST_RESULT', 'SAVE_LAST_RESULT',
-      'EXPORT_CSV', 'CLEAR_RESULTS'
+      'EXPORT_CSV', 'CLEAR_RESULTS', 'START_LIVE_TOOLTIP_CAPTURE',
+      'GET_LIVE_CAPTURE_STATUS', 'CLEAR_LIVE_CAPTURE', 'EXPORT_LIVE_CAPTURE'
     ]),
     STORAGE_KEYS: Object.freeze({
       threshold: 'thresholdMinutes',
       considerPlanned: 'considerPlannedTiming',
       diagnostics: 'lastDiagnostics',
       analysis: 'lastAnalysis',
-      csvResult: 'lastCsvReadyResult'
+      csvResult: 'lastCsvReadyResult',
+      liveCapture: 'lastLiveTooltipCapture'
     }),
     STATUS: Object.freeze({
       NORMAL: 'NORMAL',

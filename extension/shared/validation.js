@@ -29,6 +29,12 @@
         return { valid: false, error: 'Planned timing setting must be true or false.' };
       }
     }
+    if (message.type === 'START_LIVE_TOOLTIP_CAPTURE' && own(payload, 'timeoutMs')) {
+      const timeout = Number(payload.timeoutMs);
+      if (!Number.isFinite(timeout) || timeout < 60000 || timeout > 600000) {
+        return { valid: false, error: 'Live capture timeout must be from 1 to 10 minutes.' };
+      }
+    }
     return { valid: true, payload };
   }
 
