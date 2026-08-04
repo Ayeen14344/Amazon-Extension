@@ -27,11 +27,15 @@ importScripts('shared/namespace.js', 'shared/constants.js', 'shared/validation.j
         if (payload.diagnostics) update[K.diagnostics] = payload.diagnostics;
         if (payload.analysis) update[K.analysis] = payload.analysis;
         if (payload.csvResult) update[K.csvResult] = payload.csvResult;
+        if (payload.liveCapture) update[K.liveCapture] = payload.liveCapture;
         await chrome.storage.local.set(update);
         return response(true, { saved: true });
       }
       case 'CLEAR_RESULTS':
         await chrome.storage.local.remove([K.diagnostics, K.analysis, K.csvResult]);
+        return response(true, { cleared: true });
+      case 'CLEAR_LIVE_CAPTURE':
+        await chrome.storage.local.remove(K.liveCapture);
         return response(true, { cleared: true });
       case 'EXPORT_CSV': { 
         const stored = await getStored();
@@ -43,6 +47,21 @@ importScripts('shared/namespace.js', 'shared/constants.js', 'shared/validation.j
         const downloadId = await chrome.downloads.download({
           url: `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`,
           filename: VRA.CsvUtils.filename(result),
+          saveAs: true
+        });
+        return response(true, { downloadId });
+      }
+      case 'EXPORT_LIVE_CAPTURE': {
+        const stored = await getStored();
+        const capture = stored[K.liveCapture];
+        if (!capture || !Array.isArray(capture.records)) {
+          return response(false, null, 'Live capture export unavailable. Finish a live tooltip capture first.');
+        }
+        const json = JSON.stringify(capture, null, 2);
+        const date = String(capture.captureStartedAt || new Date().toISOString()).slice(0, 10);
+        const downloadId = await chrome.downloads.download({
+          url: `data:application/json;charset=utf-8,${encodeURIComponent(json)}`,
+          filename: `vine-live-tooltip-capture_${/^\d{4}-\d{2}-\d{2}$/.test(date) ? date : new Date().toISOString().slice(0, 10)}.json`,
           saveAs: true
         });
         return response(true, { downloadId });
