@@ -29,6 +29,13 @@ dd { margin: 2px 0 0; overflow-wrap: anywhere; font-weight: 600; }
 input[type="number"] { width: 78px; padding: 6px; border: 1px solid #9fb2bb; border-radius: 4px; }
 .checkbox-row { display: flex; align-items: center; gap: 7px; margin-top: 10px; }
 .actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.live-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.live-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.live-metrics div { padding: 7px 3px; text-align: center; background: #f2f7f8; border-radius: 4px; }
+.live-metrics strong, .live-metrics span { display: block; }
+.live-metrics strong { color: #12667d; font-size: 16px; }
+.live-metrics span { color: #647983; font-size: 10px; }
+.privacy-warning { margin: 9px 0 0; padding: 7px; color: #6c4700; background: #fff6dc; border-left: 3px solid #d28a00; font-size: 11px; }
 button { padding: 7px 10px; border: 1px solid #8aa3ad; border-radius: 5px; color: #18313f; background: white; font: inherit; font-weight: 600; cursor: pointer; }
 button:hover:not(:disabled) { background: #edf4f6; }
 button:focus-visible, input:focus-visible, pre:focus-visible { outline: 3px solid #f0ab00; outline-offset: 1px; }

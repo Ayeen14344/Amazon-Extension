@@ -6,6 +6,7 @@
   let activeTab = null;
   let currentDiagnostics = null;
   let currentResult = null;
+  let currentLiveCapture = null;
 
   function setText(id, value, fallback) {
     byId(id).textContent = value === null || value === undefined || value === '' ? (fallback || '—') : String(value);
@@ -100,6 +101,28 @@
     byId('export').disabled = false;
   }
 
+  function displayLiveCapture(capture, showPreview) {
+    currentLiveCapture = capture || null;
+    const counts = capture && capture.counts || {};
+    setText('live-actual-count', counts.actual || 0, '0');
+    setText('live-planned-count', counts.planned || 0, '0');
+    setText('live-break-count', counts.break || 0, '0');
+    setText('live-unknown-count', counts.unknown || 0, '0');
+    const status = capture && capture.captureStatus || 'Not started';
+    const statusBadge = byId('live-capture-status');
+    statusBadge.textContent = status;
+    statusBadge.className = `badge ${status === 'Capture completed' ? 'good' :
+      (status === 'Capture active' ? 'warn' : (status === 'Not started' ? 'neutral' : 'bad'))}`;
+    const active = status === 'Capture active';
+    byId('view-live-capture').disabled = !capture;
+    byId('download-live-capture').disabled = !capture || active;
+    byId('clear-live-capture').disabled = !capture || active;
+    if (active) byId('start-live-capture').disabled = true;
+    const preview = byId('live-capture-preview');
+    preview.textContent = capture ? JSON.stringify(capture, null, 2) : '';
+    preview.hidden = !(capture && showPreview);
+  }
+
   async function workerMessage(type, payload) {
     try {
       const reply = await chrome.runtime.sendMessage({ type, payload: payload || {} });
@@ -177,6 +200,38 @@
     finally { setBusy(false); }
   }
 
+  async function startLiveCapture() {
+    showMessage('');
+    try {
+      const result = await tabMessage('START_LIVE_TOOLTIP_CAPTURE', { timeoutMs: C.LIVE_CAPTURE_TIMEOUT_MS });
+      displayLiveCapture(result.capture, false);
+      setText('operation-message', result.alreadyActive ? 'Live capture is already active on the page.' :
+        'Live capture started. Close the popup and hover normally over actual, planned, and meal-break chart items.');
+    } catch (error) { showMessage(error.message, true); setText('operation-message', 'Live capture could not start.'); }
+  }
+
+  async function viewLiveCapture() {
+    try {
+      const stored = await workerMessage('GET_LAST_RESULT');
+      displayLiveCapture(stored[C.STORAGE_KEYS.liveCapture] || null, true);
+      setText('operation-message', stored[C.STORAGE_KEYS.liveCapture] ? 'Last live capture displayed.' : 'No saved live capture is available.');
+    } catch (error) { showMessage(error.message, true); }
+  }
+
+  async function downloadLiveCapture() {
+    try {
+      await workerMessage('EXPORT_LIVE_CAPTURE');
+      setText('operation-message', 'Live capture JSON download started. Privacy-review it before sharing.');
+    } catch (error) { showMessage(error.message, true); }
+  }
+
+  async function clearLiveCapture() {
+    try {
+      await workerMessage('CLEAR_LIVE_CAPTURE'); displayLiveCapture(null, false);
+      setText('operation-message', 'Live capture data cleared. Analysis results and settings were preserved.');
+    } catch (error) { showMessage(error.message, true); }
+  }
+
   async function copyDiagnostics() {
     if (!currentDiagnostics) return;
     try { await navigator.clipboard.writeText(JSON.stringify(currentDiagnostics, null, 2)); setText('operation-message', 'Diagnostics copied.'); }
@@ -194,7 +249,9 @@
   async function initialize() {
     [
       ['inspect', inspectChart], ['analyze', analyze], ['cancel', cancel], ['export', exportCsv],
-      ['clear', clearResults], ['copy-diagnostics', copyDiagnostics], ['download-diagnostics', downloadDiagnostics]
+      ['clear', clearResults], ['copy-diagnostics', copyDiagnostics], ['download-diagnostics', downloadDiagnostics],
+      ['start-live-capture', startLiveCapture], ['view-live-capture', viewLiveCapture],
+      ['download-live-capture', downloadLiveCapture], ['clear-live-capture', clearLiveCapture]
     ].forEach(([id, handler]) => byId(id).addEventListener('click', handler));
     byId('threshold').addEventListener('change', () => workerMessage('SAVE_LAST_RESULT', { settings: {
       thresholdMinutes: VRA.Validation.clampThreshold(byId('threshold').value), considerPlannedTiming: byId('consider-planned').checked
@@ -209,12 +266,18 @@
       byId('consider-planned').checked = stored[C.STORAGE_KEYS.considerPlanned] === true;
       if (stored[C.STORAGE_KEYS.diagnostics]) displayDiagnostics(stored[C.STORAGE_KEYS.diagnostics]);
       if (stored[C.STORAGE_KEYS.analysis]) displayResult(stored[C.STORAGE_KEYS.analysis]);
+      displayLiveCapture(stored[C.STORAGE_KEYS.liveCapture] || null, false);
       if (!activeTab || !/^https:\/\/logistics\.amazon\.com(?:\/|$)/.test(activeTab.url || '')) {
         badge('Unsupported page', 'bad'); setText('operation-message', 'Open an authorized Amazon Logistics driver page.');
         byId('inspect').disabled = true; byId('analyze').disabled = true; return;
       }
       const status = await tabMessage('CHECK_PAGE_STATUS');
       badge(status.pageStatus, status.chartDetected ? 'good' : 'warn'); setText('chart-type', status.chartType);
+      byId('start-live-capture').disabled = !status.chartDetected;
+      if (status.chartDetected) {
+        const activeCapture = await tabMessage('GET_LIVE_CAPTURE_STATUS');
+        if (activeCapture) displayLiveCapture(activeCapture, false);
+      }
       setText('operation-message', status.chartDetected ? 'Ready to inspect or analyze.' : 'Expand the driver Progress chart, then inspect.');
     } catch (error) { badge('Content script unavailable', 'bad'); showMessage(error.message, true); }
   }

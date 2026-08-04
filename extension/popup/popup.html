@@ -47,6 +47,27 @@
       <button id="clear" type="button">Clear Results</button>
     </section>
 
+    <section id="live-capture-section" aria-labelledby="live-capture-heading">
+      <div class="section-title">
+        <h2 id="live-capture-heading">Live Tooltip Capture</h2>
+        <span id="live-capture-status" class="badge neutral">Not started</span>
+      </div>
+      <div class="live-actions">
+        <button id="start-live-capture" type="button" class="primary" disabled>Start Live Tooltip Capture</button>
+        <button id="view-live-capture" type="button" disabled>View Last Live Capture</button>
+        <button id="download-live-capture" type="button" disabled>Download Live Capture JSON</button>
+        <button id="clear-live-capture" type="button" disabled>Clear Live Capture</button>
+      </div>
+      <div class="live-metrics" aria-label="Live tooltip sample counts">
+        <div><strong id="live-actual-count">0</strong><span>Actual</span></div>
+        <div><strong id="live-planned-count">0</strong><span>Planned</span></div>
+        <div><strong id="live-break-count">0</strong><span>Break</span></div>
+        <div><strong id="live-unknown-count">0</strong><span>Unknown</span></div>
+      </div>
+      <p class="privacy-warning">Privacy-review this JSON before sharing it with a developer.</p>
+      <pre id="live-capture-preview" tabindex="0" hidden></pre>
+    </section>
+
     <section class="operation" aria-labelledby="operation-heading">
       <h2 id="operation-heading">Progress and status</h2>
       <p id="operation-message" role="status" aria-live="polite">Ready.</p>
