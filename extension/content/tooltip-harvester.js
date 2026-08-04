@@ -80,7 +80,7 @@
     });
   }
 
-  function candidateScore(element) {
+  function candidateScore(element, selectorHints) {
     let score = 0;
     if (element.hasAttribute('aria-label') || element.hasAttribute('data-tooltip') || element.hasAttribute('tabindex') ||
         element.hasAttribute('title') || element.querySelector('title')) score += 1000;
@@ -92,18 +92,44 @@
     // Geometry is used only to prioritize hover targets; it is never converted into a stop number or timestamp.
     if (element.matches('path') && rect.width <= 48 && rect.height <= 48) score += 250;
     if (getComputedStyle(element).cursor === 'pointer') score += 300;
+    (selectorHints || []).forEach((hint) => {
+      const target = hint && hint.hoverTarget || {};
+      const tag = element.tagName.toLowerCase();
+      if (target.tag && target.tag === tag) score += 900;
+      if (target.svgElementType && target.svgElementType === tag) score += 700;
+      if (target.role && element.getAttribute('role') === target.role) score += 500;
+      if (target.semanticAttributes && target.semanticAttributes.hasAriaLabel && element.hasAttribute('aria-label')) score += 300;
+      if (target.semanticAttributes && target.semanticAttributes.hasTitle && (element.hasAttribute('title') || element.querySelector('title'))) score += 300;
+      const names = target.semanticAttributes && target.semanticAttributes.dataAttributeNames || [];
+      names.forEach((name) => { if (element.hasAttribute(name)) score += 180; });
+      const expectedAncestors = Array.isArray(target.ancestorSummary) ? target.ancestorSummary : [];
+      let parent = element.parentElement;
+      expectedAncestors.slice(0, 4).forEach((expected) => {
+        if (parent && parent.tagName.toLowerCase() === expected) score += 120;
+        parent = parent && parent.parentElement;
+      });
+    });
     return score;
   }
 
-  function pointCandidates(roots) {
+  function pointCandidates(roots, selectorHints) {
     const result = [];
     roots.forEach((root) => root.querySelectorAll(
       'svg circle, svg rect, svg path, svg line, svg [role="img"], svg [aria-label], svg [data-tooltip], svg [tabindex]'
     ).forEach((element) => {
       if (D.isVisible(element) && getComputedStyle(element).pointerEvents !== 'none' && !result.includes(element)) result.push(element);
     }));
-    return result.sort((a, b) => candidateScore(b) - candidateScore(a))
+    return result.sort((a, b) => candidateScore(b, selectorHints) - candidateScore(a, selectorHints))
       .slice(0, VRA.Constants.MAX_TOOLTIP_POINTS);
+  }
+
+  async function loadSelectorHints() {
+    try {
+      const stored = await chrome.storage.local.get(VRA.Constants.STORAGE_KEYS.liveCapture);
+      const capture = stored[VRA.Constants.STORAGE_KEYS.liveCapture];
+      if (!capture || capture.extensionVersion !== VRA.Constants.VERSION || !Array.isArray(capture.selectorHints)) return [];
+      return capture.selectorHints.slice(0, 30);
+    } catch (error) { return []; }
   }
 
   /** Sequentially hovers likely points and returns only newly visible tooltip text. */
@@ -111,7 +137,7 @@
     cancelled = false;
     const initialUrl = location.href;
     const initialTitle = document.title;
-    const points = pointCandidates(roots);
+    const points = pointCandidates(roots, await loadSelectorHints());
     const records = [];
     const warnings = [];
     for (let index = 0; index < points.length; index += 1) {

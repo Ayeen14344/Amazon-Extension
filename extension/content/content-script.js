@@ -55,6 +55,15 @@
       case 'CANCEL_ANALYSIS':
         VRA.TooltipHarvester.cancel();
         return response(true, { cancelled: true });
+      case 'START_LIVE_TOOLTIP_CAPTURE': {
+        const diagnostics = VRA.ChartInspector.inspect();
+        if (!diagnostics.numberOfChartContainerCandidates) {
+          return response(false, null, 'No progress-chart candidate is visible. Expand one driver’s Progress chart and try again.');
+        }
+        return response(true, await VRA.LiveTooltipCapture.start({ diagnostics, timeoutMs: validation.payload.timeoutMs }));
+      }
+      case 'GET_LIVE_CAPTURE_STATUS':
+        return response(true, VRA.LiveTooltipCapture.status());
       default:
         return response(false, null, 'This action must be handled by the extension service worker.');
     }
