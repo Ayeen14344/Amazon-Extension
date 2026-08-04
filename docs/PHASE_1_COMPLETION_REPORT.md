@@ -4,6 +4,8 @@
 
 VINE Route Gap Auditor 0.1.0 has been implemented as an unpacked Chrome Manifest V3 extension with no build step. It analyzes one manually opened driver chart at a time, uses only structured data exposed to the authorized page, applies deterministic gap/break rules, presents human-review language, exports protected CSV, stores the latest result locally, and emits bounded diagnostics when real chart extraction is unsupported.
 
+Current status: **Phase 1 is not yet marked complete.** Live Tooltip Capture Mode has been implemented but requires owner confirmation on the real Amazon chart.
+
 ## Files created
 
 - `extension/manifest.json`
@@ -16,7 +18,9 @@ VINE Route Gap Auditor 0.1.0 has been implemented as an unpacked Chrome Manifest
 - `extension/shared/validation.js`
 - `extension/content/page-detector.js`
 - `extension/content/chart-inspector.js`
+- `extension/content/tooltip-parser.js`
 - `extension/content/tooltip-harvester.js`
+- `extension/content/live-tooltip-capture.js`
 - `extension/content/chart-extractor.js`
 - `extension/content/content-script.js`
 - `extension/popup/popup.html`
@@ -52,11 +56,21 @@ VINE Route Gap Auditor 0.1.0 has been implemented as an unpacked Chrome Manifest
 
 ## Tests created and outcomes
 
-Fifteen deterministic fixtures were created for every required engine and CSV case. The direct-open runner requires no server and shows expected/actual values plus total/pass/fail counts.
+The original fifteen deterministic fixtures cover every required engine and CSV case. Three additional fixtures cover the sanitized actual-delivery, planned-delivery, and planned-meal-break tooltip structures. The direct-open runner requires no server and shows expected/actual values plus total/pass/fail counts.
 
-Static fixture review outcome: all 15 expected calculations match the implemented branches, including total break allowance reuse (15 minutes), midnight difference (20 minutes), and CSV quote/formula behavior.
+The owner reran the browser runner after the initial delivery. The observed result was **14 passed and 1 failed**. Test 5, the 25-minute meal-break overlap, exposed incorrect allowance priority: the engine read the explicit 30-minute allowance but then capped it to the first unidentified chronological fallback of 15 minutes.
 
-Automated browser observation could not be completed inside the delivery environment: the installed Chrome process was blocked by its local GPU/profile sandbox, and the managed in-app browser correctly refused `file://` navigation by policy. Therefore this report does **not** claim an observed browser pass. The owner should open `tests/test-runner.html` directly in ordinary Chrome and verify **Total 15 / Passed 15 / Failed 0**. This is the only outstanding local QA observation; the runner itself and all fixtures are complete.
+The break-allocation priority was corrected so a valid explicit allowance wins first, followed by normalized break type, recognized sanitized label, and only then the chronological 15/30/15 fallback for unidentified windows. Planned duration still caps the approved allowance, and each stable break window retains its own remaining balance so allowance cannot be reused.
+
+The owner reran `tests/test-runner.html` after the correction in ordinary Google Chrome. The deterministic browser test runner has now been observed successfully with the verified result **Total 15 / Passed 15 / Failed 0**.
+
+Test 5 now passes with expected and actual output both equal to **PLANNED BREAK / approved 25**. Test 7 continues to pass with expected and actual output both equal to **15 total approved**, confirming that the meal allowance was corrected without weakening per-window allowance non-reuse.
+
+After that verified 15-test baseline, the runner was expanded to 18 tests for the sanitized Amazon tooltip structures. The owner reported that the existing 18 parser and engine tests pass. Those tests remain unchanged.
+
+Real Amazon automatic hover continued to report `actualTimestampsAppearAccessible: false`, `plannedTimestampsAppearAccessible: false`, and `breakPeriodsAppearAccessible: false`. The chart appears to require real trusted user hover, so Live Tooltip Capture Mode was added with an on-page panel, trusted-event metadata, mutation-aware body/open-shadow-root observation, stable tooltip reads, deduplication, isolated local storage, JSON export, semantic selector hints, timeout, page-change handling, and complete cleanup.
+
+Ten live-capture fixtures were added as Tests 19–28 without altering Tests 1–18. The expanded runner's expected result is **Total 28 / Passed 28 / Failed 0**. Do not treat that result or live Amazon capture as confirmed until the owner reruns the expanded browser runner and validates Live Tooltip Capture on the actual page.
 
 Manifest/static audit outcome:
 

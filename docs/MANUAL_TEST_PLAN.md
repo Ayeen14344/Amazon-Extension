@@ -34,7 +34,7 @@ Use Chrome with a non-production or otherwise authorized page whenever possible.
 
 ## D. Deterministic engine browser tests
 
-Open `tests/test-runner.html` directly in Chrome. Expected summary: Total 15, Passed 15, Failed 0. Individually verify:
+Open `tests/test-runner.html` directly in Chrome. Expected summary: Total 28, Passed 28, Failed 0. Individually verify:
 
 22. 10-minute gap, no break → NORMAL.
 23. 18-minute gap, no break → REVIEW.
@@ -51,6 +51,20 @@ Open `tests/test-runner.html` directly in Chrome. Expected summary: Total 15, Pa
 34. 23:50 to 00:10 next day → 20 minutes.
 35. CSV cell beginning `=` → prefixed with apostrophe.
 36. CSV comma and embedded quote → RFC-style quoted and doubled quote.
+
+36a. Sanitized **Actual - Delivery** tooltip parses the actual series, stop, actual/planned times, variance, and delivery count.
+36b. Sanitized **Planned route - Delivery** tooltip parses the planned series, stop, planned time, and package count.
+36c. Sanitized **Planned - Meal break** tooltip parses the meal series, start/end times, duration, and allowance.
+36d. Duplicate actual live-capture records count once.
+36e. Duplicate planned live-capture records count once.
+36f. Duplicate meal-break live-capture records count once.
+36g. Unknown tooltip text remains bounded diagnostic data.
+36h. The VINE capture panel is excluded from tooltip candidates.
+36i. Clearing live capture preserves threshold settings and route analysis.
+36j. Cleanup callbacks remove active capture resources once.
+36k. URL change or chart removal triggers stop while an unchanged page does not.
+36l. Trusted-event metadata remains true in a captured record.
+36m. Export whitelisting excludes HTML, cookies, tokens, and request headers.
 
 ## E. Results, storage, and export
 

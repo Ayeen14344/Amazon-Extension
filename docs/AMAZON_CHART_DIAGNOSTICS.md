@@ -46,3 +46,9 @@ If authorized, collect separate privacy-reviewed JSON reports for an SVG chart, 
 ## Expected unsupported behavior
 
 For a canvas chart with no accessible values, the correct Phase 1 result is: **Canvas chart detected, but structured chart values are not accessible in Phase 1.** The extension must not infer values from pixels or invent timestamps.
+
+## Trusted-hover live capture
+
+If automatic hover still reports the actual, planned, and break accessibility flags as false, use **Start Live Tooltip Capture** from the popup. Close the popup, hover normally over the three chart series, and finish from the on-page panel. Reopen the popup to view and download the bounded capture JSON.
+
+The capture records trusted-event metadata, sanitized element/ancestor structure, stable tooltip text, parser output, render location, and semantic selector hints. It never records full HTML, cookies, tokens, request headers, network data, screenshots, OCR, or pixel-derived timestamps. Privacy-review the JSON before sharing and prefer the included `sharingSafeUrl` when reporting structure to a developer.
