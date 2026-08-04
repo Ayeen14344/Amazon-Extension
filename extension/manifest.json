@@ -24,8 +24,10 @@
         "shared/gap-engine.js",
         "content/page-detector.js",
         "content/chart-inspector.js",
+        "content/tooltip-parser.js",
         "content/tooltip-harvester.js",
         "content/chart-extractor.js",
+        "content/live-tooltip-capture.js",
         "content/content-script.js"
       ],
       "run_at": "document_idle"
