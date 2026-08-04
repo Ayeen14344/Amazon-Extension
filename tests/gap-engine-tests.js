@@ -74,6 +74,65 @@
       plannedBreak.plannedEnd.slice(11, 16), plannedBreak.plannedDurationMinutes,
       plannedBreak.allowanceMinutes].join('|');
   });
+  add('19. Actual live-capture record deduplicates', '1|1', () => {
+    const state = VRA.LiveCaptureCore.createInitialState({ currentUrl: 'https://logistics.amazon.com/' });
+    const first = VRA.LiveCaptureCore.buildRecord({ text: D.tooltipFixtures.actualDelivery, routeDate: '2026-08-02', eventIsTrusted: true });
+    const second = VRA.LiveCaptureCore.buildRecord({ text: D.tooltipFixtures.actualDelivery, routeDate: '2026-08-02', eventIsTrusted: true });
+    VRA.LiveCaptureCore.addUniqueRecord(state, first); VRA.LiveCaptureCore.addUniqueRecord(state, second);
+    return `${state.counts.actual}|${state.records.length}`;
+  });
+  add('20. Planned live-capture record deduplicates', '1|1', () => {
+    const state = VRA.LiveCaptureCore.createInitialState({});
+    VRA.LiveCaptureCore.addUniqueRecord(state, VRA.LiveCaptureCore.buildRecord({ text: D.tooltipFixtures.plannedDelivery, routeDate: '2026-08-02', eventIsTrusted: true }));
+    VRA.LiveCaptureCore.addUniqueRecord(state, VRA.LiveCaptureCore.buildRecord({ text: D.tooltipFixtures.plannedDelivery, routeDate: '2026-08-02', eventIsTrusted: true }));
+    return `${state.counts.planned}|${state.records.length}`;
+  });
+  add('21. Meal-break live-capture record deduplicates', '1|1', () => {
+    const state = VRA.LiveCaptureCore.createInitialState({});
+    VRA.LiveCaptureCore.addUniqueRecord(state, VRA.LiveCaptureCore.buildRecord({ text: D.tooltipFixtures.mealBreak, routeDate: '2026-08-02', eventIsTrusted: true }));
+    VRA.LiveCaptureCore.addUniqueRecord(state, VRA.LiveCaptureCore.buildRecord({ text: D.tooltipFixtures.mealBreak, routeDate: '2026-08-02', eventIsTrusted: true }));
+    return `${state.counts.break}|${state.records.length}`;
+  });
+  add('22. Unknown tooltip remains bounded diagnostic data', 'true|unknown|1000|1', () => {
+    const candidate = VRA.LiveCaptureCore.isCandidateText(D.tooltipFixtures.unknownTooltip, { tooltipLike: true });
+    const state = VRA.LiveCaptureCore.createInitialState({});
+    const record = VRA.LiveCaptureCore.buildRecord({ text: D.tooltipFixtures.unknownTooltip, routeDate: '2026-08-02', eventIsTrusted: true });
+    VRA.LiveCaptureCore.addUniqueRecord(state, record);
+    return `${candidate}|${record.seriesType}|${record.sanitizedTooltipText.length}|${state.counts.unknown}`;
+  });
+  add('23. Capture panel text is never an Amazon tooltip', 'false', () =>
+    VRA.LiveCaptureCore.isCandidateText('VINE Live Tooltip Capture Actual: 0 Planned: 0 Break: 0 Unknown: 0', { tooltipLike: true }));
+  add('24. Clear Live Capture preserves settings and analysis', '20|analysis|false', () => {
+    const K = VRA.Constants.STORAGE_KEYS;
+    const cleared = VRA.LiveCaptureCore.clearStoredCaptureSnapshot({
+      [K.threshold]: 20, [K.analysis]: 'analysis', [K.liveCapture]: { records: [] }
+    });
+    return `${cleared[K.threshold]}|${cleared[K.analysis]}|${Object.prototype.hasOwnProperty.call(cleared, K.liveCapture)}`;
+  });
+  add('25. Capture cleanup removes listeners and observers', '2|false', () => {
+    let removed = 0; const cleanup = VRA.LiveCaptureCore.createCleanupRegistry();
+    cleanup.add(() => { removed += 1; }); cleanup.add(() => { removed += 1; }); cleanup.cleanup(); cleanup.cleanup();
+    return `${removed}|${cleanup.active}`;
+  });
+  add('26. Page change stops active capture', 'true|true|false', () => [
+    VRA.LiveCaptureCore.shouldStopForPageChange('https://a/one', 'https://a/two', true),
+    VRA.LiveCaptureCore.shouldStopForPageChange('https://a/one', 'https://a/one', false),
+    VRA.LiveCaptureCore.shouldStopForPageChange('https://a/one', 'https://a/one', true)
+  ].join('|'));
+  add('27. Trusted-event metadata is preserved', 'true', () =>
+    VRA.LiveCaptureCore.buildRecord({ text: D.tooltipFixtures.actualDelivery, routeDate: '2026-08-02', eventIsTrusted: true }).eventIsTrusted);
+  add('28. Live-capture JSON export excludes sensitive fields', 'true|true', () => {
+    const state = VRA.LiveCaptureCore.createInitialState({
+      currentUrl: 'https://logistics.amazon.com/operations/itineraries/PRIVATE_ROUTE?serviceAreaId=PRIVATE_AREA#fragment'
+    });
+    const record = VRA.LiveCaptureCore.buildRecord({ text: D.tooltipFixtures.actualDelivery, routeDate: '2026-08-02', eventIsTrusted: true });
+    record.outerHTML = '<secret>'; record.innerHTML = '<secret>'; record.cookies = 'secret';
+    record.tokens = 'secret'; record.requestHeaders = { Authorization: 'secret' };
+    record.parsedRecord.tokens = 'secret'; VRA.LiveCaptureCore.addUniqueRecord(state, record);
+    const exported = VRA.LiveCaptureCore.createExportPayload(state); const json = JSON.stringify(exported);
+    const excluded = !/(outerHTML|innerHTML|cookies|tokens|requestHeaders|Authorization|<secret>)/.test(json);
+    return `${excluded}|${exported.currentUrl.indexOf('#') === -1}`;
+  });
 
   function comparable(value) {
     return typeof value === 'string' ? value : JSON.stringify(value);

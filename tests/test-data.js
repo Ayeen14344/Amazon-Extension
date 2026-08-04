@@ -40,7 +40,8 @@
       'Start    2:32pm',
       'End    3:02pm',
       'Duration    30m'
-    ].join('\n')
+    ].join('\n'),
+    unknownTooltip: `Delivery tooltip Stop #44 5:10pm ${'diagnostic '.repeat(140)}`
   });
 
   VRA.TestData = { iso, point, plannedBreak, base, tooltipFixtures };
